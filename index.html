@@ -1,1 +1,523 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Claude Automation & Skills Tracker</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='9' fill='%23ff7d07'/%3E%3Cpath d='M20 8 L23 17 L32 20 L23 23 L20 32 L17 23 L8 20 L17 17 Z' fill='%23fff'/%3E%3C/svg%3E">
+<style>
+  :root{
+    --ink:#0E1B3D;--ink2:#1b2f5c;--paper:#f4f5f8;--card:#fff;--line:#e3e6ec;
+    --orange:#ff7d07;--orange2:#e06e00;--text:#1a2238;--muted:#8a90a0;
+    --green:#2E7D4F;--mauve:#b06b91;--gray:#9aa3af;--red:#c0392b;
+    --blueL:#8ec1f9;--blueD:#428ce2;--gold:#b08d3a;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:var(--paper);color:var(--text)}
+  header{background:var(--ink);color:#fff;padding:14px 20px;display:flex;align-items:center;gap:16px;border-bottom:3px solid var(--orange)}
+  header .logo{height:34px;width:34px;display:block}
+  .htitle{font-size:12px;font-weight:600;color:#cdd6e4;letter-spacing:.5px;border-left:1px solid #2c3d66;padding-left:16px}
+  .htitle b{font-size:14px;font-weight:800;color:#fff;letter-spacing:.5px;display:block}
+  .htitle small{display:block;color:#7a86a0;font-size:9.5px;letter-spacing:.6px;margin-top:2px}
+  .wrap{max-width:1500px;margin:0 auto;padding:16px 14px 40px}
 
+  .tabs{display:flex;gap:8px;margin:4px 0 16px;flex-wrap:wrap}
+  .tab{background:#fff;border:2px solid var(--ink);border-radius:11px;padding:10px 22px;font-size:13px;font-weight:800;letter-spacing:.4px;color:var(--ink);cursor:pointer;font-family:inherit}
+  .tab.on{background:var(--ink);color:#fff;border-color:var(--ink);box-shadow:0 2px 6px rgba(14,27,61,.3)}
+  .tab:active{opacity:.85}
+
+  .stat{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+  .addbtn{background:var(--orange);color:#fff;border:none;border-radius:9px;padding:8px 15px;font-size:12px;font-weight:800;cursor:pointer;box-shadow:0 1px 5px rgba(255,125,7,.35)}
+  .addbtn:active{opacity:.85}
+
+  .scroll{overflow:auto;max-height:calc(100vh - 230px);background:var(--card);border:1px solid var(--line);border-radius:13px;box-shadow:0 1px 4px rgba(14,27,61,.05)}
+  table{border-collapse:collapse;width:100%}
+  thead th{background:var(--ink);color:#fff;font-size:11px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;text-align:center;padding:11px 10px;white-space:nowrap;position:sticky;top:0;z-index:6}
+  tbody td{border-top:1px solid var(--line);padding:8px 10px;vertical-align:middle;font-size:13px}
+  tbody tr:hover td{background:#f8fafc}
+
+  .secbar{background:#f6f8fb;padding:8px 12px;user-select:none;border-top:1px solid var(--line)}
+  .secpill{display:inline-flex;align-items:center;gap:7px;background:var(--orange);color:#fff;border-radius:10px;padding:8px 14px;box-shadow:0 1px 5px rgba(255,125,7,.35)}
+  .secpill .chev{color:#fff;font-weight:900;cursor:pointer;font-size:17px;line-height:1;padding:5px 16px;margin:-4px 0 -4px -8px;border-radius:8px;background:rgba(255,255,255,.12);box-shadow:inset 0 1px 0 rgba(255,255,255,.25),0 1px 2px rgba(0,0,0,.15);transition:all .12s}
+  .secpill .chev:hover{background:rgba(255,255,255,.28);box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 3px 7px rgba(0,0,0,.28);transform:translateY(-1px)}
+  .secpill .chev:active{transform:translateY(1px);box-shadow:inset 0 2px 4px rgba(0,0,0,.25)}
+  .secpill .n{color:#ffe3c7;font-weight:700;font-size:11px}
+  .secname{background:transparent;border:none;font-family:inherit;font-size:13px;font-weight:800;letter-spacing:.7px;text-transform:uppercase;color:#fff;min-width:170px;width:auto;outline:none;white-space:nowrap;overflow:visible}
+  .secname::placeholder{color:#ffe3c7}
+  .fchips{display:inline-flex;gap:5px;margin-left:12px;vertical-align:middle}
+  .fchip{border:1.5px solid #b9c0cf;background:#fff;border-radius:12px;padding:6px 13px;font-size:11.5px;font-weight:800;letter-spacing:.3px;color:#4b5563;cursor:pointer;text-transform:none}
+  .fchip.on{background:var(--ink);border-color:var(--ink);color:#fff}
+  .secbar .del{color:#b8bfcc}
+  .secbar .del:hover{color:var(--red)}
+
+  select.status{border:none;border-radius:14px;padding:6px 10px;font-size:11px;font-weight:800;letter-spacing:.3px;text-transform:uppercase;color:#fff;cursor:pointer;outline:none;appearance:none;-webkit-appearance:none}
+  .st-complete{background:var(--ink)}
+  .st-inprogress{background:linear-gradient(90deg,#1f8a4c,#5cc884,#1f8a4c);background-size:200% 100%;animation:flow 2.6s linear infinite}
+  .st-notstarted{background:var(--gray)}.st-onhold{background:#a34d64}.st-overdue{background:var(--red)}
+  @keyframes flow{0%{background-position:0 0}100%{background-position:200% 0}}
+
+  .cell{border:1px solid transparent;background:transparent;font-family:inherit;font-size:13px;color:var(--text);outline:none;width:100%;padding:5px 6px;border-radius:7px}
+  .cell:focus{border-color:var(--orange);background:#fff}
+  .cell.task{font-weight:700;min-width:240px}
+  .cell.dl{width:128px}.cell.days{width:52px;text-align:center}
+  .cell::placeholder{color:#b8bfcc}
+  .del{border:none;background:transparent;color:#b8bfcc;font-size:14px;cursor:pointer;padding:2px 6px}
+  .del:hover{color:var(--red)}
+  .addrow{width:100%;text-align:left;background:#f6f8fb;border:none;border-top:1px dashed var(--line);color:var(--orange2);font-weight:800;font-size:12px;padding:9px 12px;cursor:pointer}
+  .addrow:hover{background:#eef2f8}
+
+  .chips{display:flex;flex-wrap:wrap;gap:5px;align-items:center;min-width:150px;max-width:250px}
+  .chip{display:inline-flex;align-items:center;gap:4px;color:#fff;border-radius:12px;padding:4px 7px 4px 9px;font-size:10.5px;font-weight:700;white-space:nowrap;background:var(--gold)}
+  .chip span{cursor:pointer;opacity:.85;font-size:12px;line-height:1}
+  .chip.a-red{background:var(--red)}
+  .chip.a-orange{background:#E8821E}
+  .chip.a-blue{background:#1c5fa8}
+  .chip.a-green{background:#2E7D4F}
+  .add-sel{border-radius:12px;padding:4px 8px;font-size:10.5px;font-weight:700;cursor:pointer;outline:none;appearance:none;-webkit-appearance:none;border:1px dashed #d8c596;background:#f7f1e3;color:#8a6d22}
+
+  .notebtn{border:1px solid var(--line);background:#fafbfc;border-radius:9px;padding:6px 9px;font-size:14px;cursor:pointer;line-height:1;display:inline-flex;align-items:center;gap:5px}
+  .notewrap{display:flex;align-items:flex-start;gap:7px;max-width:300px}
+  .noteprev{flex:1;font-size:11.5px;color:#4b5563;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;cursor:pointer;min-width:0}
+  .noteprev:hover{color:var(--ink)}
+  .npen{border:1px solid var(--line);background:#fafbfc;border-radius:8px;padding:4px 7px;font-size:12px;cursor:pointer;line-height:1;flex-shrink:0}
+  .npen:hover{border-color:var(--orange)}
+
+  /* timeline */
+  .tlwrap{overflow-x:auto;background:var(--card);border:1px solid var(--line);border-radius:13px;box-shadow:0 1px 4px rgba(14,27,61,.05)}
+  table.tl{border-collapse:collapse;width:100%;table-layout:fixed;min-width:860px}
+  table.tl th,table.tl td{border:1px solid var(--line);padding:0;text-align:center}
+  table.tl thead th{background:var(--ink);color:#fff;font-size:10px;font-weight:700;letter-spacing:.3px;padding:7px 4px}
+  table.tl thead th.month{background:var(--ink2);border-bottom:2px solid var(--orange);cursor:pointer;position:relative}
+  table.tl thead th.month .mx{opacity:0;font-size:9px;margin-left:5px;color:#ffd0a3}
+  table.tl thead th.month:hover .mx{opacity:1}
+  table.tl thead th.wk{cursor:pointer;position:relative}
+  table.tl thead th.wk .wx{display:block;font-size:8px;color:#ffd0a3;opacity:0;line-height:1;margin-top:1px}
+  table.tl thead th.wk:hover .wx{opacity:1}
+  .tlname{position:sticky;left:0;z-index:2;background:#fff;text-align:left;width:260px}
+  thead .tlname{background:var(--ink);z-index:3}
+  .tlrow-actions{display:flex;align-items:center;gap:2px;padding-right:4px}
+  .tlrow-actions .del{flex-shrink:0;order:2}
+  .tlname input{border:none;background:transparent;font-family:inherit;font-size:11.5px;font-weight:700;color:var(--text);outline:none;flex:1;min-width:0;padding:8px 4px 8px 10px;order:1}
+  .tlname input:focus{background:#f8fafc}
+  .tlcell{height:34px;cursor:pointer}
+  .tlcell.l{background:var(--blueL)}.tlcell.d{background:var(--blueD)}
+  .legend{display:flex;gap:16px;align-items:center;flex-wrap:wrap;margin:12px 2px 0;font-size:11.5px;color:var(--muted)}
+  .legend i{display:inline-block;width:15px;height:15px;border-radius:4px;vertical-align:-3px;margin-right:5px}
+  .sw-l{background:var(--blueL)}.sw-d{background:var(--blueD)}
+  .hint{font-size:11.5px;color:var(--muted);margin:9px 2px 0}
+
+  /* note modal */
+  .modal-bg{position:fixed;inset:0;background:rgba(14,27,61,.55);display:none;align-items:center;justify-content:center;z-index:80;padding:14px}
+  .modal-bg.show{display:flex}
+  .modal{background:#fff;border-radius:14px;width:min(860px,100%);max-height:88vh;display:flex;flex-direction:column;box-shadow:0 14px 44px rgba(0,0,0,.32);overflow:hidden}
+  .mhead{background:var(--ink);color:#fff;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:3px solid var(--orange)}
+  .mtitle{font-size:14px;font-weight:800;letter-spacing:.3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .mtitle small{display:block;font-size:10px;font-weight:600;color:#cdd6e4;letter-spacing:.4px;margin-top:2px}
+  .mclose{background:transparent;border:none;color:#fff;font-size:22px;cursor:pointer;line-height:1;padding:0 4px}
+  .mbody{padding:14px 16px;overflow:auto}
+  .fmtbar{display:flex;flex-wrap:wrap;align-items:center;gap:5px;border:1px solid var(--line);border-bottom:none;border-radius:10px 10px 0 0;background:#f6f8fb;padding:7px 9px}
+  .fmtb{min-width:30px;height:28px;border:1px solid var(--line);background:#fff;border-radius:7px;font-size:13px;cursor:pointer;color:#3b4453;font-family:inherit;line-height:1}
+  .fmtb:active{background:#e9edf5}
+  .fmtb.b{font-weight:900}.fmtb.i{font-style:italic;font-family:Georgia,serif}.fmtb.u{text-decoration:underline}
+  .fmtsep{width:1px;height:18px;background:var(--line);margin:0 3px}
+  .sw{width:22px;height:22px;border-radius:50%;border:1.5px solid #fff;box-shadow:0 0 0 1px var(--line);cursor:pointer;padding:0}
+  .sw:active{transform:scale(.92)}
+  .bignote{width:100%;min-height:300px;max-height:50vh;overflow:auto;border:1px solid var(--line);border-radius:0 0 10px 10px;padding:12px 14px;font-size:14px;font-family:inherit;outline:none;line-height:1.55;text-align:left}
+  .bignote:focus{border-color:var(--orange)}
+  .bignote:empty:before{content:attr(data-ph);color:#b8bfcc}
+  .bignote ul,.bignote ol{margin:6px 0;padding-left:24px}
+  .bignote li{margin:2px 0}
+  .mfoot{padding:11px 16px;border-top:1px solid var(--line);display:flex;justify-content:flex-end;background:#f8fafc}
+  .btn-save{background:var(--orange);color:#fff;border:none;border-radius:9px;padding:9px 20px;font-weight:800;font-size:13px;cursor:pointer;box-shadow:0 1px 5px rgba(255,125,7,.35)}
+  .btn-save:active{opacity:.85}
+
+  footer{text-align:center;color:var(--muted);font-size:12px;padding:18px 12px 6px}
+  #sync{font-weight:700;margin:7px 0}
+  .logbtn{margin-left:auto;background:rgba(255,255,255,.1);border:1px solid #2c3d66;color:#cdd6e4;border-radius:9px;padding:7px 13px;font-size:11px;font-weight:800;cursor:pointer;font-family:inherit;white-space:nowrap}
+  .logbtn:hover{background:rgba(255,255,255,.18)}
+  .logrow{display:flex;gap:10px;padding:9px 2px;border-bottom:1px solid var(--line);font-size:12.5px;line-height:1.5}
+  .logrow:last-child{border-bottom:none}
+  .logwho{flex-shrink:0;background:#e9edf5;color:var(--ink2);border-radius:8px;padding:2px 9px;font-size:10.5px;font-weight:800;height:fit-content}
+  .logmsg{flex:1;color:#39415a}
+  .logtime{flex-shrink:0;color:var(--muted);font-size:10.5px;white-space:nowrap}
+  #lastUpd{font-size:11px;color:var(--muted);font-weight:700;margin-top:5px}
+  .cell.dl.needdl{border-color:#e05c4a !important;box-shadow:0 0 0 3px rgba(224,92,74,.15);animation:dlp 1.6s ease-in-out infinite}
+  @keyframes dlp{0%,100%{box-shadow:0 0 0 3px rgba(224,92,74,.12)}50%{box-shadow:0 0 0 5px rgba(224,92,74,.28)}}
+  #toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 18px;border-radius:20px;font-size:13px;font-weight:700;opacity:0;transition:opacity .25s;pointer-events:none;z-index:99}
+  #toast.show{opacity:1}
+  @media (max-width:640px){.htitle{border-left:none;padding-left:0}}
+</style>
+</head>
+<body>
+<header>
+  <svg class="logo" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <rect width="40" height="40" rx="9" fill="#ff7d07"/>
+    <path d="M20 8 L23 17 L32 20 L23 23 L20 32 L17 23 L8 20 L17 17 Z" fill="#fff"/>
+  </svg>
+  <div class="htitle">
+    <b>CLAUDE AUTOMATION TRACKER</b>
+    <small>EXPORT PARTNERS · SKILL &amp; OTOMASYON YOL HARİTASI</small>
+  </div>
+  <button class="logbtn" onclick="openLog()">🕑 Updates</button>
+</header>
+
+<div class="wrap">
+  <div class="tabs">
+    <button class="tab on" id="tab-tasks" onclick="showTab('tasks')">Track Tasks</button>
+    <button class="tab" id="tab-timeline" onclick="showTab('timeline')">Timeline</button>
+  </div>
+
+  <section id="view-tasks">
+    <div class="stat">
+      <button class="addbtn" onclick="addSection()">+ Section</button>
+      <span id="lastUpd"></span>
+    </div>
+    <div class="scroll">
+      <table>
+        <thead><tr><th style="width:118px">STATUS</th><th style="width:128px">EST. DEADLINE</th><th style="width:52px">DAYS</th><th>TASK</th><th style="width:250px">ACTION</th><th style="width:310px">NOTE</th><th style="width:36px"></th></tr></thead>
+        <tbody id="taskBody"></tbody>
+      </table>
+    </div>
+    <div class="hint">Her bölüm başlığındaki filtrelerle Complete / On Hold işleri ayıklayabilirsin. Nota tıklayınca tam editör açılır.</div>
+  </section>
+
+  <section id="view-timeline" style="display:none">
+    <div class="stat">
+      <button class="addbtn" onclick="addTLRow()">+ Row</button>
+    </div>
+    <div class="tlwrap">
+      <table class="tl"><thead id="tlHead"></thead><tbody id="tlBody"></tbody></table>
+    </div>
+    <div class="legend">
+      <span><i class="sw-l"></i>Planned</span>
+      <span><i class="sw-d"></i>Active / heavy</span>
+      <span>Hücreye dokun: boş → planned → active → boş · Ay başlığındaki ✕ ile o ayı kaldır</span>
+    </div>
+  </section>
+
+  <footer><div id="sync"></div></footer>
+</div>
+
+<!-- note modal -->
+<div class="modal-bg" id="noteBg">
+  <div class="modal">
+    <div class="mhead"><div class="mtitle" id="noteTitle"></div><button class="mclose" onclick="closeNote()">×</button></div>
+    <div class="mbody">
+      <div class="fmtbar">
+        <button class="fmtb b" onclick="fmt('bold')" title="Bold">B</button>
+        <button class="fmtb i" onclick="fmt('italic')" title="Italic">I</button>
+        <button class="fmtb u" onclick="fmt('underline')" title="Underline">U</button>
+        <span class="fmtsep"></span>
+        <button class="fmtb" onclick="fmt('insertUnorderedList')" title="Bullet list">•</button>
+        <button class="fmtb" onclick="fmt('insertOrderedList')" title="Numbered list">1.</button>
+        <span class="fmtsep"></span>
+        <button class="sw" style="background:#0E1B3D" onclick="fmtColor('#0E1B3D')" title="Navy"></button>
+        <button class="sw" style="background:#ff7d07" onclick="fmtColor('#ff7d07')" title="Orange"></button>
+        <button class="sw" style="background:#2E7D4F" onclick="fmtColor('#2E7D4F')" title="Green"></button>
+        <button class="sw" style="background:#c0392b" onclick="fmtColor('#c0392b')" title="Red"></button>
+        <button class="sw" style="background:#1a2238" onclick="fmtColor('#1a2238')" title="Default"></button>
+      </div>
+      <div class="bignote" id="noteText" contenteditable="true" data-ph="Durum notu, çıktılar, bekleyen işler..."></div>
+    </div>
+    <div class="mfoot"><button class="btn-save" onclick="saveNote()">Save note</button></div>
+  </div>
+</div>
+
+<!-- log modal -->
+<div class="modal-bg" id="logBg">
+  <div class="modal">
+    <div class="mhead"><div class="mtitle">Updates<small>SON DEĞİŞİKLİKLER</small></div><button class="mclose" onclick="closeLog()">×</button></div>
+    <div class="mbody" id="logBody"></div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+const STATUSES=['Complete','In Progress','Not Started','On Hold','Over Due'];
+const SCLASS={'Complete':'st-complete','In Progress':'st-inprogress','Not Started':'st-notstarted','On Hold':'st-onhold','Over Due':'st-overdue'};
+const ACTIONS=['Kurs/Öğrenme','Dokümantasyon Okunacak','API Erişimi Bekliyor','Test Ediliyor','Debug Gerekli','Revizyon Gerekli'];
+const ACT_RED=['Debug Gerekli'];
+const ACT_ORANGE=['Revizyon Gerekli','Dokümantasyon Okunacak'];
+const ACT_BLUE=['API Erişimi Bekliyor','Test Ediliyor'];
+const ACT_GREEN=['Kurs/Öğrenme'];
+
+const DEFAULT_WEEKS=[
+  {m:'AĞUSTOS',w:'W2'},{m:'AĞUSTOS',w:'W3'},{m:'AĞUSTOS',w:'W4'},{m:'AĞUSTOS',w:'W5'},
+  {m:'EYLÜL',w:'W1'},{m:'EYLÜL',w:'W2'},{m:'EYLÜL',w:'W3'},{m:'EYLÜL',w:'W4'},{m:'EYLÜL',w:'W5'},
+  {m:'EKİM',w:'W1'},{m:'EKİM',w:'W2'},{m:'EKİM',w:'W3'},{m:'EKİM',w:'W4'}
+];
+function weeksNow(){return state.weeks&&state.weeks.length?state.weeks:DEFAULT_WEEKS;}
+
+function id(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7);}
+function esc(s){return (s||'').replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));}
+function fill(n,v){return Array.from({length:n},()=>v);}
+const DNW=DEFAULT_WEEKS.length;
+function tl(name,marks){let c=fill(DNW,0);for(const k in marks)c[+k]=marks[k];return {id:id(),task:name,cells:c};}
+
+const SEED={
+  sections:[
+    {id:id(),name:'TEMEL KURULUM & ORTAM',rows:[
+      {id:id(),status:'Complete',deadline:'',days:'',task:'Claude Desktop kurulumu & tanışma',note:'<b>✓ TAMAMLANDI.</b> Claude Desktop bilgisayarına kurulu. Chat + Cowork + Code aynı uygulamada.<br><br><b>Sıradaki:</b> Code sekmesini aktif kullanmaya başlamak (aşağıdaki "İlk script" görevi).',actions:[]},
+      {id:id(),status:'Complete',deadline:'',days:'',task:'Claude Code kurulumu',note:'<b>✓ TAMAMLANDI.</b> Claude Code makinende kurulu ve çalışıyor. Kurulum engelini geçtin.<br><br><b>Not:</b> Henüz aktif kullanmadın — o yüzden asıl başlangıç "İlk mini proje" görevi. Script yazmayı SEN öğrenmeyeceksin; Claude Code yazacak, sen ne istediğini söyleyeceksin.',actions:[]},
+      {id:id(),status:'Complete',deadline:'',days:'',task:'Chat üzerinden Claude ile iş yapma pratiği',note:'<b>✓ ZATEN YAPIYORSUN.</b> Bugün 10 saat boyunca chat üzerinden: WordPress yönetimi, Search Console analizi, cPanel/DNS, Google Ads temizliği, veri (CSV/Excel) analizi yaptın.<br><br><b>Bu önemli çünkü:</b> Neyi otomatikleştireceğini zaten biliyorsun — çünkü elle yaptın. Eksik olan tek şey: bunları chat yerine kendi makinende script olarak çalıştırmak. Köprü sadece bu.',actions:[]},
+      {id:id(),status:'In Progress',deadline:'2026-08-16',days:'',task:'Terminal ile 15 dakikalık tanışma',note:'<b>NE:</b> Script yazmayacaksın ama Claude Code terminalde çalıştığı için temel 3-4 komutu tanı, korkun gitsin.<br><br><b>NASIL:</b><ol><li>Mac\'te "Terminal" uygulamasını aç (Spotlight\'ta ara).</li><li>Şunları dene: <code>pwd</code> (neredeyim), <code>ls</code> (bu klasörde ne var), <code>cd Desktop</code> (masaüstüne git).</li><li>Hepsi bu. Gerisini Claude Code halleder.</li></ol><b>ÇIKTI:</b> Terminal sana yabancı gelmiyor.<br><br><b style="color:#ff7d07">Bana sor:</b> "Terminal\'de bu komutları beraber deneyelim, ne işe yarıyor anlat." Korkacak bir şey yok, 15 dakika.',actions:['Kurs/Öğrenme']},
+      {id:id(),status:'Not Started',deadline:'2026-08-20',days:'',task:'Google Cloud Console: ilk API erişimi (Search Console)',note:'<b>NE:</b> Search Console verisine script ile erişmek için tek seferlik izin al. Şimdilik SADECE Search Console, hepsini birden değil.<br><br><b>NASIL (özet):</b><ol><li>console.cloud.google.com > yeni proje ("export-partners").</li><li>Search Console API\'yi etkinleştir.</li><li>OAuth credentials oluştur, JSON indir.</li></ol><b style="color:#ff7d07">DİKKAT — bu adım kafa karıştırır:</b> Buraya geldiğinde bana <b>"Google Cloud API kurulumunu ekran ekran öğret"</b> de. Tek tek tıklatırım, tahmin ettirmem. Bu tek zorlu kurulum adımı; geçince gerisi kolay.<br><br><b>ÇIKTI:</b> Elinde credentials.json (ilk scriptinin anahtarı).',actions:['Dokümantasyon Okunacak']},
+      {id:id(),status:'Not Started',deadline:'2026-08-23',days:'',task:'★ İLK SCRIPT: Search Console aylık rapor (senin gerçek başlangıcın)',note:'<b>BURASI SENİN GERÇEK BAŞLANGIÇ ÇİZGİN.</b> Kurulumlar bitti, ilk gerçek otomasyon bu.<br><br><b>NE:</b> "Geçen ayın en çok pozisyon kaybeden 10 kelimesini Excel çıkar." Bugün elle baktığın Search Console verisini script otomatik çeksin.<br><br><b>NASIL:</b><ol><li>Claude Code\'u aç, bir klasör seç.</li><li>Aynen şunu yaz: <i>"credentials.json ile Search Console\'a bağlan, exportpartners.com.tr için son 30 günün en çok pozisyon kaybeden 10 kelimesini Excel\'e çıkar."</i></li><li>Claude Code scripti YAZAR, çalıştırır, Excel üretir. Sen sadece izler ve "çalıştır" dersin.</li></ol><b>ÇIKTI:</b> Hayatındaki ilk otomasyon. Bir daha Search Console\'u elle açmana gerek yok.<br><br><b style="color:#ff7d07">Bana MUTLAKA sor:</b> "İlk scriptimi beraber yazalım." Seni ekran ekran, komut komut yönlendiririm. Hata alırsan (alacaksın, normal) beraber çözeriz. <b>Bu görevi bitirdiğin an sen artık "otomasyon yapan biri"sin.</b>',actions:[]}
+    ]},
+    {id:id(),name:'WORDPRESS OTOMASYON',rows:[
+      {id:id(),status:'Not Started',deadline:'2026-08-27',days:'',task:'Yeni yazı yayınlama akışı (REST API)',note:'<b>NE:</b> Markdown dosyası ver → Claude Code WordPress\'e yayınlasın. Yazı başı manuel süre 20 dk → 2 dk.<br><br><b>ÖN KOŞUL:</b> WordPress Application Password (Temel Kurulum bölümünde).<br><br><b>NASIL:</b><ol><li>Claude Code\'a Application Password + site adresini ver.</li><li>De ki: "Bu markdown dosyasını WordPress\'e taslak olarak yükle, kategori X, etiket Y."</li><li>Önce <u>taslak</u> olarak dene, elle önizle, sonra yayına al.</li></ol><b>ÇIKTI:</b> Bir komutla yazı WordPress\'te taslak.<br><br><b style="color:#ff7d07">Bana sor:</b> "WordPress REST API ile yazı yükleme scriptini yapalım."',actions:[]},
+      {id:id(),status:'Not Started',deadline:'2026-08-29',days:'',task:'Öne çıkan görsel + Yoast alanları otomatik',note:'<b>NE:</b> SEO başlık, meta açıklama, odak kelime, görsel alt tag, iç link önerileri otomatik dolsun.<br><br><b>NASIL:</b><ol><li>Bir önceki scripti genişlet: yazıyı yüklerken Yoast alanlarını da doldur.</li><li>Claude yazıyı okur, odak kelimeyi ve meta açıklamayı önerir.</li><li>İç link için: sitendeki eski yazıları tarar, uygun olanları önerir.</li></ol><b>ÇIKTI:</b> Yazı yüklendiğinde Yoast alanları dolu geliyor.<br><br><b style="color:#ff7d07">Not:</b> Yoast\'ın REST API alanları biraz çetrefil. Bana "Yoast alanlarını API\'den doldurmak" de, tam field isimlerini veririm.',actions:[]},
+      {id:id(),status:'Not Started',deadline:'2026-08-31',days:'',task:'Yayınla + Search Console tetikleme zinciri',note:'<b>NE:</b> Yazı yayınlanınca otomatik "dizine eklenmeyi iste" gitsin. SBX Indexer\'dan iyi, senin kontrolünde.<br><br><b>ÖN KOŞUL:</b> Search Console API (Temel Kurulum) + yazı yayınlama scripti.<br><br><b>NASIL:</b><ol><li>Yayınlama scriptinin sonuna Search Console "URL inspection / index request" çağrısı ekle.</li><li>Yazı yayınlanır → URL otomatik tetiklenir.</li></ol><b>ÇIKTI:</b> Yayınla dediğinde indexleme de tetikleniyor, tek akış.<br><br><b style="color:#ff7d07">Bana sor:</b> "Search Console indexing API ile tetikleme."',actions:[]},
+      {id:id(),status:'Not Started',deadline:'2026-09-03',days:'',task:'Aylık otomatik yedek + Google Drive yükleme',note:'<b>NE:</b> Site yedeğini al, Drive\'a yükle, bildirim gönder. Her ayın 1\'i otomatik. Bir daha yedek unutma.<br><br><b>NASIL:</b><ol><li>All-in-One WP Migration\'ın arayüzü olduğu için: ya eklentinin API\'sini kullan, ya Playwright ile "insan gibi tıkla".</li><li>Oluşan .wpress dosyasını Drive API ile yükle.</li><li>cron ile ayın 1\'ine zamanla.</li></ol><b>ÇIKTI:</b> Her ay otomatik yedek, sen hiç dokunmadan Drive\'da.<br><br><b style="color:#ff7d07">Not:</b> Bugün elle yaptığın işin (13 Ağustos yedeği) otomatik hali. Bana "yedek otomasyonunu kuralım" de.',actions:[]}
+    ]},
+    {id:id(),name:'SEO & SEARCH CONSOLE',rows:[
+      {id:id(),status:'Not Started',deadline:'2026-09-05',days:'',task:'Aylık sıralama raporu (pozisyon değişimi)',note:'<b>NE:</b> En çok gösterim alan 20 kelime, pozisyon değişimleri, kazanan/kaybeden. Senin gerçek "aylık raporun". Selim\'in vermediği şey.<br><br><b>ÖN KOŞUL:</b> İlk Search Console scripti (Temel Kurulum). Bunu genişleteceksin.<br><br><b>NASIL:</b><ol><li>İlk scripte "geçen ayla bu ayı karşılaştır" mantığı ekle.</li><li>Pozisyon farkını hesapla, en çok yükselen/düşen kelimeleri listele.</li><li>Excel\'e renkli çıkar (yeşil=yükseldi, kırmızı=düştü).</li></ol><b>ÇIKTI:</b> Ay sonu 1 komutla tam performans tablosu.',actions:[]},
+      {id:id(),status:'Not Started',deadline:'2026-09-07',days:'',task:'İndexlenmeyen sayfa tespiti + otomatik tetikleme',note:'<b>NE:</b> "Keşfedildi/Tarandı ama dizine eklenmedi" listesini çek, gerçek içerik (blog/hizmet) varsa otomatik tetikle.<br><br><b>NASIL:</b><ol><li>Search Console\'dan indexlenmeyen URL listesini çek.</li><li>tag/category/author sayfalarını otomatik ele (bunlar zaten indexlenmesin).</li><li>Kalan gerçek içerik URL\'lerini otomatik "dizine eklenmeyi iste" ile tetikle.</li></ol><b>ÇIKTI:</b> Bugün 5 URL\'i elle tetikledin ya — bu, onun otomatik hali.<br><br><b style="color:#ff7d07">Bugünkü dersle bağ:</b> Bugün Coverage ekranında yaptığın analizi script yapar.',actions:[]},
+      {id:id(),status:'Not Started',deadline:'2026-09-10',days:'',task:'Anahtar kelime fırsat listesi (pos 5-20)',note:'<b>NE:</b> "Hızlı kazanç bölgesi": gösterim var ama sıralama zayıf kelimeler. amazon danışmanlık, marka tescili gibi.<br><br><b>NASIL:</b><ol><li>Search Console\'dan pozisyonu 5-20 arası, gösterimi yüksek kelimeleri filtrele.</li><li>Bunlar "biraz itersen ilk sayfaya girecek" kelimeler.</li><li>İçerik takvimine girdi olarak kullan.</li></ol><b>ÇIKTI:</b> Hangi konuya yazı yazacağını veri söylüyor, tahmin değil.<br><br><b style="color:#ff7d07">Strateji:</b> Bu liste = bir sonraki 12 blog yazının konu havuzu.',actions:[]},
+      {id:id(),status:'Not Started',deadline:'2026-09-14',days:'',task:'Rakip site sıralama takibi',note:'<b>NE:</b> 10-15 rakip belirle, haftalık sıralama/yeni içerik takibi. Değişimde mail.<br><br><b>NASIL:</b><ol><li>Rakip listesi hazırla (ihracat danışmanlığı, FDA, Amazon SPN yapan Türk firmalar).</li><li>Haftalık kontrol scripti: yeni içerik yayınlamışlar mı, hangi kelimede sıralanıyorlar.</li><li>Değişim varsa sana özet mail.</li></ol><b>ÇIKTI:</b> Rakipler ne yapıyor, sen otomatik biliyorsun.<br><br><b style="color:#ff7d07">Not:</b> Backlink stratejinin de gözü bu — rakip nereden link almış görürsün.',actions:[]}
+    ]},
+    {id:id(),name:'GÖRSEL & İÇERİK ÜRETİMİ',rows:[
+      {id:id(),status:'Not Started',deadline:'2026-09-12',days:'',task:'Görsel üretim API bağlantısı (Nano Banana / Ideogram)',note:'<b>NE:</b> Claude yazının konusunu okur → görsel prompt yazar → API görsel üretir → WordPress\'e yükler. "Görsel de üret" bile demezsin.<br><br><b>ÖNEMLİ:</b> Anthropic API görsel <u>üretmez</u>. Görsel için ayrı bir servis gerekir (Google Nano Banana, Ideogram, Flux). Claude promptu yazar, o servise gönderir.<br><br><b>NASIL:</b><ol><li>Bir görsel API\'sine hesap aç, anahtar al.</li><li>Zincir kur: Claude yazıyı okur → görsel promptu yazar → API\'ye gönderir → görsel gelir → WordPress medyaya yüklenir.</li></ol><b>ÇIKTI:</b> Yazının öne çıkan görseli otomatik üretiliyor.<br><br><b style="color:#ff7d07">Bana sor:</b> "Hangi görsel API\'si bana uygun, nasıl bağlarım."',actions:['Dokümantasyon Okunacak']},
+      {id:id(),status:'Not Started',deadline:'2026-09-16',days:'',task:'Yazı taslağı üretim akışı (senin tarzınla)',note:'<b>NE:</b> Bağlam Paketi Bölüm 2 (ton kuralları) + Bölüm 3 (örnek yazılar) otomatik yüklenir. 1500-2000 kelime taslak.<br><br><b>NASIL:</b><ol><li>Bağlam Paketi dosyanı scriptin sistem promptuna koy.</li><li>Konu ver → Claude senin tarzınla (em-dash yok, hedge\'li dil, önce zorluk sonra fırsat) taslak yazar.</li><li>Sen okur, sektör detayını düzeltir, yayınlarsın.</li></ol><b>ÇIKTI:</b> Yazı taslağı 5 dakikada, senin sesinle.<br><br><b style="color:#ff7d07">Kilit:</b> Senin sektör bilgin + Claude\'un hızı. Ham iş Claude\'da, kalite kontrol sende.',actions:[]},
+      {id:id(),status:'Not Started',deadline:'2026-09-20',days:'',task:'Konu → taslak → görsel → paket zinciri',note:'<b>NE:</b> Tek komut: konu ver, Claude taslağı + görseli + Yoast alanlarını paket olarak sunsun. Yazı başı 2-3 saat → 30 dk.<br><br><b>ÖN KOŞUL:</b> Bu bölümün önceki 2 görevi + WordPress otomasyon bölümü.<br><br><b>NASIL:</b> Tüm parçaları birleştir: taslak üretimi + görsel üretimi + Yoast doldurma + yayınlama + tetikleme = tek zincir.<br><br><b>ÇIKTI:</b> "Amerika şirket kurulumu hakkında yazı" dersin, dakikalar sonra yayına hazır paket gelir.<br><br><b style="color:#ff7d07">Bu görev bir dönüm noktası</b> — buraya geldiğinde içerik üretimin tamamen dönüşmüş olur.',actions:[]}
+    ]},
+    {id:id(),name:'ADS & İZLEME & TAM OTOMASYON',rows:[
+      {id:id(),status:'Not Started',deadline:'2026-09-24',days:'',task:'Search Terms Report otomatik analiz + negatif öneri',note:'<b>NE:</b> Raporu indir, 0 dönüşümlü para yiyen terimleri tespit et, negatif keyword listesi öner.<br><br><b>NASIL:</b><ol><li>Google Ads API ile Search Terms Report\'u otomatik çek.</li><li>0 dönüşüm + yüksek harcama olan terimleri filtrele.</li><li>"Şu 15 terimi negatif ekle" listesi çıkar.</li></ol><b>ÇIKTI:</b> Bugün elle yaptığın FDA kampanya temizliği (nedir/ne demek negatifleri) → otomatik.<br><br><b style="color:#ff7d07">Bugünkü dersle bağ:</b> Sabah 22K TL sızıntıyı elle buldun. Script her hafta bunu otomatik yapar.',actions:[]},
+      {id:id(),status:'Not Started',deadline:'2026-09-28',days:'',task:'Düşük CTR / yüksek ACoS uyarı sistemi',note:'<b>NE:</b> "X kampanyasının maliyeti bugün 500 TL\'yi geçti, dur" tarzı anlık uyarı. Bütçe koruması.<br><br><b>NASIL:</b><ol><li>Günlük Ads verisini çek.</li><li>Eşikleri tanımla (CTR &lt; %1, günlük maliyet &gt; X TL).</li><li>Eşik aşılınca sana mail/WhatsApp uyarı.</li></ol><b>ÇIKTI:</b> Para yanmadan haberin oluyor.<br><br><b style="color:#ff7d07">Not:</b> ACoS tek başına metrik değil, TACoS trendine bakan uyarılar kur.',actions:[]},
+      {id:id(),status:'Not Started',deadline:'2026-10-01',days:'',task:'Aylık performans özet raporu',note:'<b>NE:</b> Ads + Search Console + WordPress tek raporda birleşsin. Ay sonu 5 dakikada tüm resmi gör.<br><br><b>NASIL:</b> Önceki tüm scriptlerin çıktısını tek bir aylık özet dosyada topla: kaç yazı yayınlandı, SEO pozisyonları, Ads harcama/dönüşüm, index durumu.<br><br><b>ÇIKTI:</b> Kendi kendinin patronuna aylık rapor verir gibi tam görünüm.',actions:[]},
+      {id:id(),status:'Not Started',deadline:'2026-10-08',days:'',task:'Tüm sistemin haftalık otomatik çalışması (cron)',note:'<b>NE:</b> Kurulan tüm scriptler zamanlanmış görevlerle otomatik dönsün. Bu adımdan sonra sen sadece strateji ve onay ile ilgilenirsin.<br><br><b>NASIL:</b><ol><li>cron (zamanlanmış görev) mantığını öğren.</li><li>Her scripti uygun aralığa bağla (yedek=aylık, SEO rapor=aylık, Ads uyarı=günlük, rakip takip=haftalık).</li><li>Bilgisayarın kapalıyken de çalışması için VPS/bulut düşün.</li></ol><b>ÇIKTI:</b> <b>Sistem sensiz çalışıyor.</b> Sen strateji + içerik + onay ile ilgilenirsin, mekanik iş bitti.<br><br><b style="color:#ff7d07">Final:</b> Buraya geldiğinde bir ay önce elle yaptığın her rutin iş otomatik. Selim gibi kimseye muhtaç değilsin, üstelik çok daha fazlasını yapıyorsun.',actions:[]}
+    ]}
+  ],
+  timeline:[
+    tl('Terminal tanışma + ilk API erişimi',{0:2}),
+    tl('★ İlk script (SC raporu) — başlangıç',{0:2,1:1}),
+    tl('WordPress otomasyon',{1:1,2:2,3:1}),
+    tl('SEO / Search Console otomasyon',{3:1,4:2,5:1}),
+    tl('Görsel & içerik üretimi',{5:1,6:2,7:1}),
+    tl('Ads otomasyon',{7:1,8:2,9:1}),
+    tl('Cron / tam otomasyon & bakım',{9:1,10:2,11:1}),
+    tl('İzleme & iyileştirme',{11:1,12:2})
+  ],
+  weeks:DEFAULT_WEEKS.map(w=>({m:w.m,w:w.w})),
+  log:[]
+};
+
+let state={sections:[],timeline:[],weeks:[],log:[]};
+let collapsed={};
+let secFilter={};
+
+function normalize(d){
+  d=d||{};
+  const weeks=(Array.isArray(d.weeks)&&d.weeks.length)?d.weeks.map(w=>({m:w.m||'',w:w.w||''})):DEFAULT_WEEKS.map(w=>({m:w.m,w:w.w}));
+  const nw=weeks.length;
+  const sections=(d.sections||[]).map(s=>({id:s.id||id(),name:s.name||'',rows:(s.rows||[]).map(r=>({
+    id:r.id||id(),status:STATUSES.includes(r.status)?r.status:'Not Started',
+    deadline:r.deadline||'',days:r.days||'',task:r.task||'',note:r.note||'',
+    actions:Array.isArray(r.actions)?r.actions.filter(a=>ACTIONS.includes(a)):[],isNew:!!r.isNew,odMuted:!!r.odMuted
+  }))}));
+  const timeline=(d.timeline||[]).map(t=>{
+    let cells=Array.isArray(t.cells)?t.cells.slice(0,nw):[];
+    while(cells.length<nw)cells.push(0);
+    return {id:t.id||id(),task:t.task||'',cells:cells.map(x=>[0,1,2].includes(x)?x:0)};
+  });
+  const log=Array.isArray(d.log)?d.log.slice(0,60).map(e=>({t:+e.t||0,u:(e.u||'').slice(0,24),m:(e.m||'').slice(0,160)})):[];
+  return {sections,timeline,weeks,log};
+}
+
+/* ---------- storage (local only) ---------- */
+const LS_KEY='claude_tracker_v1';
+function setSync(){const el=document.getElementById('sync');if(el){el.textContent='● Bu cihazda yerel olarak kaydediliyor';el.style.color='#9aa1ad';}}
+function save(){try{localStorage.setItem(LS_KEY,JSON.stringify(state));}catch(e){}}
+function localData(){let d=null;try{d=JSON.parse(localStorage.getItem(LS_KEY)||'null');}catch(e){}return d?normalize(d):normalize(SEED);}
+function initData(){state=localData();setSync();renderAll();}
+
+/* ---------- activity log ---------- */
+const USER_KEY='claude_user';
+function whoAmI(){
+  let u='';try{u=localStorage.getItem(USER_KEY)||'';}catch(e){}
+  if(!u){
+    u=(prompt('Adınız (değişiklik kayıtlarında görünecek):')||'').trim().slice(0,24)||'Deniz';
+    try{localStorage.setItem(USER_KEY,u);}catch(e){}
+  }
+  return u;
+}
+let _lastTlLog=0;
+function logChange(m){
+  if(!state.log)state.log=[];
+  state.log.unshift({t:Date.now(),u:whoAmI(),m:String(m).slice(0,160)});
+  if(state.log.length>60)state.log.length=60;
+  renderLastUpd();
+}
+function agoTxt(t){
+  const d=Date.now()-t;
+  if(d<60000)return 'az önce';
+  if(d<3600000)return Math.floor(d/60000)+' dk önce';
+  if(d<86400000)return Math.floor(d/3600000)+' saat önce';
+  return Math.floor(d/86400000)+' gün önce';
+}
+function renderLastUpd(){
+  const el=document.getElementById('lastUpd');if(!el)return;
+  const e=(state.log||[])[0];
+  el.textContent=e?('Son güncelleme: '+agoTxt(e.t)+' · '+e.u+' · '+e.m):'';
+}
+function openLog(){
+  const b=document.getElementById('logBody');
+  const L=state.log||[];
+  b.innerHTML=L.length?L.map(e=>`<div class="logrow"><span class="logwho">${esc(e.u)}</span><span class="logmsg">${esc(e.m)}</span><span class="logtime">${agoTxt(e.t)}</span></div>`).join(''):'<div style="color:var(--muted);font-size:13px;padding:10px 2px">Henüz kayıtlı değişiklik yok.</div>';
+  document.getElementById('logBg').classList.add('show');
+}
+function closeLog(){document.getElementById('logBg').classList.remove('show');}
+
+/* ---------- tabs ---------- */
+function showTab(t){
+  ['tasks','timeline'].forEach(k=>{
+    document.getElementById('view-'+k).style.display=t===k?'':'none';
+    document.getElementById('tab-'+k).classList.toggle('on',t===k);
+  });
+}
+
+/* ---------- track tasks ---------- */
+function daysLeft(dl){
+  if(!dl)return null;
+  const d=new Date(dl+'T12:00:00');if(isNaN(d))return null;
+  const now=new Date();now.setHours(12,0,0,0);
+  return Math.round((d-now)/86400000);
+}
+function statusOpts(sel){return STATUSES.map(s=>`<option value="${s}" ${s===sel?'selected':''}>${s==='Complete'?'Completed':s}</option>`).join('');}
+function addOpts(list,have){return '<option value="">+ Action</option>'+list.filter(x=>!have.includes(x)).map(x=>`<option>${x}</option>`).join('');}
+function actClass(a){if(ACT_RED.includes(a))return 'a-red';if(ACT_ORANGE.includes(a))return 'a-orange';if(ACT_BLUE.includes(a))return 'a-blue';if(ACT_GREEN.includes(a))return 'a-green';return '';}
+const SORT_RANK={'Over Due':0,'On Hold':1,'In Progress':2,'Complete':3,'Not Started':4};
+function rowCmp(a,b){
+  if(!!a.r.isNew!==!!b.r.isNew)return a.r.isNew?-1:1;
+  if(a.r.isNew&&b.r.isNew)return a.ri-b.ri;
+  const ra=SORT_RANK[a.r.status],rb=SORT_RANK[b.r.status];
+  if(ra!==rb)return ra-rb;
+  if(a.r.status==='Complete')return a.ri-b.ri;
+  const da=a.r.deadline?new Date(a.r.deadline+'T12:00:00').getTime():Infinity;
+  const db=b.r.deadline?new Date(b.r.deadline+'T12:00:00').getTime():Infinity;
+  if(da!==db)return da-db;
+  return a.ri-b.ri;
+}
+function passFilter(sel,r){if(!sel||!sel.length)return true;return sel.includes(r.status);}
+function toggleFilter(sid,st){const cur=secFilter[sid]||[];secFilter[sid]=cur.includes(st)?cur.filter(x=>x!==st):cur.concat(st);renderTasks();}
+function clearFilter(sid){secFilter[sid]=[];renderTasks();}
+function rowHtml(si,ri,r){
+  const chips=(r.actions||[]).map((a,j)=>`<span class="chip ${actClass(a)}">${esc(a)}<span onclick="rmAction(${si},${ri},${j})">✕</span></span>`).join('');
+  const notePrev=textOf(r.note||'');
+  return `<tr>
+    <td><select class="status ${SCLASS[r.status]}" onchange="updRow(${si},${ri},'status',this.value);renderTasks()">${statusOpts(r.status)}</select></td>
+    <td>${(r.status==='Complete'||r.status==='Not Started')?'<span style="color:#b6bcc8;font-size:12px">—</span>':`<input class="cell dl ${r.status==='In Progress'&&!r.deadline?'needdl':''}" type="date" value="${esc(r.deadline)}" onchange="updRow(${si},${ri},'deadline',this.value)">`}</td>
+    <td>${(()=>{const dlv=r.status==='Complete'?null:daysLeft(r.deadline);if(dlv===null)return `<input class="cell days" value="${esc(r.days)}" placeholder="—" onchange="updRow(${si},${ri},'days',this.value)">`;const cls=dlv<0?'neg':(dlv<=3?'':'mut');return `<span class="res ${cls}" style="display:block;text-align:center;font-weight:800;font-size:12.5px;color:${dlv<0?'var(--red)':(dlv<=3?'var(--text)':'var(--muted)')}" title="Est. deadline'a göre">${dlv}</span>`;})()}</td>
+    <td><input class="cell task" value="${esc(r.task)}" placeholder="Task" onchange="updRow(${si},${ri},'task',this.value)"></td>
+    <td><div class="chips">${chips}<select class="add-sel" onchange="addAction(${si},${ri},this.value);this.selectedIndex=0">${addOpts(ACTIONS,r.actions||[])}</select></div></td>
+    <td><div class="notewrap">${notePrev?`<div class="noteprev" onclick="openNote(${si},${ri})" title="Notu aç">${esc(notePrev)}</div>`:''}<button class="npen" onclick="openNote(${si},${ri})" title="${notePrev?'Notu düzenle':'Not ekle'}">✏️</button></div></td>
+    <td><button class="del" onclick="delRow(${si},${ri})" title="Satırı sil">✕</button></td>
+  </tr>`;
+}
+function renderTasks(){
+  let html='';
+  state.sections.forEach((s,si)=>{
+    const f=secFilter[s.id]||[];
+    const open=!collapsed[s.id];
+    const shown=s.rows.map((r,ri)=>({r,ri})).filter(x=>passFilter(f,x.r)).sort(rowCmp);
+    html+=`<tr><td colspan="7" class="secbar">
+      <span class="secpill">
+        <span class="chev" onclick="toggleSec('${s.id}')">${open?'▾':'▸'}</span>
+        <input class="secname" value="${esc(s.name)}" onchange="updSection(${si},this.value)" size="${Math.max(12,(s.name||'').length+4)}">
+        <span class="n">${s.rows.filter(r=>r.status==='Complete').length}/${s.rows.length}</span>
+      </span>
+      <span class="fchips">
+        <button class="fchip ${f.length===0?'on':''}" onclick="clearFilter('${s.id}')">All</button>
+        ${['In Progress','Not Started','Complete','On Hold'].map(st=>`<button class="fchip ${f.includes(st)?'on':''}" onclick="toggleFilter('${s.id}','${st.replace(/'/g,"\\'")}')">${f.includes(st)?'✓ ':''}${st==='Complete'?'Completed':st}</button>`).join('')}
+      </span>
+      <button class="del" onclick="delSection(${si})" title="Bölümü sil" style="float:right">✕</button>
+    </td></tr>`;
+    if(open){
+      html+=`<tr><td colspan="7" style="padding:0"><button class="addrow" onclick="addRow(${si})">+ Satır ekle</button></td></tr>`;
+      html+=shown.map(x=>rowHtml(si,x.ri,x.r)).join('');
+    }
+  });
+  document.getElementById('taskBody').innerHTML=html;
+}
+function updRow(si,ri,k,v){
+  const r=state.sections[si].rows[ri],old=r[k];r[k]=v;
+  if(old!==v){
+    if(k==='status'){
+      logChange(r.task+' → '+v);r.isNew=false;
+      if(v==='Not Started'){r.deadline='';r.days='';r.odMuted=false;}
+      if(v==='In Progress'&&!r.deadline)toast('⚠ Bu iş In Progress: lütfen Est. Deadline girin');
+    }
+    else if(k==='deadline')logChange('Deadline: '+r.task+' → '+(v||'—'));
+    else if(k==='task')logChange('Görev adı: "'+(old||'')+'" → "'+v+'"');
+    else if(k==='days')logChange('Days: '+r.task+' → '+(v||'—'));
+  }
+  save();
+}
+function updSection(si,v){state.sections[si].name=v;save();}
+function toggleSec(sid){collapsed[sid]=!collapsed[sid];renderTasks();}
+function addRow(si){state.sections[si].rows.unshift({id:id(),status:'Not Started',deadline:'',days:'',task:'',note:'',actions:[],isNew:true});logChange('Satır eklendi ('+state.sections[si].name+')');save();renderTasks();}
+function delRow(si,ri){logChange('Satır silindi: '+(state.sections[si].rows[ri].task||'—'));state.sections[si].rows.splice(ri,1);save();renderTasks();}
+function addSection(){state.sections.push({id:id(),name:'YENİ BÖLÜM',rows:[]});save();renderTasks();}
+function delSection(si){state.sections.splice(si,1);save();renderTasks();}
+function addAction(si,ri,v){if(!v)return;const r=state.sections[si].rows[ri];if(!r.actions)r.actions=[];if(!r.actions.includes(v)){r.actions.push(v);logChange('Action eklendi: '+v+' — '+r.task);}save();renderTasks();}
+function rmAction(si,ri,j){const r=state.sections[si].rows[ri];logChange('Action kaldırıldı: '+r.actions[j]+' — '+r.task);r.actions.splice(j,1);save();renderTasks();}
+
+/* ---------- note modal ---------- */
+let noteSel=null;
+function toRich(m){if(!m)return '';if(/<[a-z][\s\S]*>/i.test(m))return cleanRich(m);return esc(m).replace(/\n/g,'<br>');}
+function cleanRich(h){
+  return (h||'')
+    .replace(/<\s*(script|style|iframe|object|embed|link|meta)[\s\S]*?<\s*\/\s*\1\s*>/gi,'')
+    .replace(/<\s*(script|style|iframe|object|embed|link|meta)\b[^>]*>/gi,'')
+    .replace(/\son[a-z]+\s*=\s*"[^"]*"/gi,'')
+    .replace(/\son[a-z]+\s*=\s*'[^']*'/gi,'')
+    .replace(/\son[a-z]+\s*=\s*[^\s>]+/gi,'')
+    .replace(/(href|src)\s*=\s*("|')?\s*javascript:[^"'>\s]*/gi,'$1="#"');
+}
+function textOf(h){return (h||'').replace(/<[^>]+>/g,' ').replace(/&nbsp;/g,' ').replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/\s+/g,' ').trim();}
+function fmt(cmd){const ed=document.getElementById('noteText');if(ed.focus)ed.focus();try{document.execCommand('styleWithCSS',false,true);}catch(e){}try{document.execCommand(cmd,false,null);}catch(e){}}
+function fmtColor(col){const ed=document.getElementById('noteText');if(ed.focus)ed.focus();try{document.execCommand('styleWithCSS',false,true);}catch(e){}try{document.execCommand('foreColor',false,col);}catch(e){}}
+function openNote(si,ri){
+  noteSel=[si,ri];
+  const r=state.sections[si].rows[ri];
+  document.getElementById('noteTitle').innerHTML=esc(r.task||'(task)')+'<small>NOTE</small>';
+  document.getElementById('noteText').innerHTML=toRich(r.note||'');
+  document.getElementById('noteBg').classList.add('show');
+}
+function closeNote(){document.getElementById('noteBg').classList.remove('show');noteSel=null;renderTasks();}
+function saveNote(){
+  if(!noteSel)return;
+  state.sections[noteSel[0]].rows[noteSel[1]].note=cleanRich(document.getElementById('noteText').innerHTML);
+  logChange('Not güncellendi: '+(state.sections[noteSel[0]].rows[noteSel[1]].task||'—'));
+  save();toast('Kaydedildi');closeNote();
+}
+
+/* ---------- timeline ---------- */
+function renderTimeline(){
+  const WK=weeksNow();
+  let months=[];
+  WK.forEach(w=>{const last=months[months.length-1];if(last&&last.m===w.m)last.span++;else months.push({m:w.m,span:1});});
+  let head='<tr><th class="tlname" rowspan="2">TASKS</th>'+months.map(mo=>`<th class="month" colspan="${mo.span}" title="Bu ayı kaldır" onclick="delMonth('${mo.m}')">${mo.m}<span class="mx">✕</span></th>`).join('')+'</tr>';
+  head+='<tr>'+WK.map((w,i)=>`<th class="wk" title="Bu haftayı kaldır" onclick="delWeek(${i})">${w.w}<span class="wx">✕</span></th>`).join('')+'</tr>';
+  document.getElementById('tlHead').innerHTML=head;
+  let body='';
+  state.timeline.forEach((t,ti)=>{
+    body+=`<tr><td class="tlname"><div class="tlrow-actions"><input value="${esc(t.task)}" placeholder="Task" onchange="updTL(${ti},this.value)"><button class="del" onclick="delTLRow(${ti})" title="Satırı sil">✕</button></div></td>`;
+    body+=t.cells.map((c,ci)=>`<td class="tlcell ${c===1?'l':c===2?'d':''}" onclick="cycleCell(${ti},${ci})"></td>`).join('');
+    body+='</tr>';
+  });
+  document.getElementById('tlBody').innerHTML=body;
+}
+function delWeek(i){const WK=weeksNow();if(!WK[i])return;state.weeks=WK.filter((w,j)=>j!==i);state.timeline.forEach(t=>{t.cells.splice(i,1);});save();renderTimeline();toast(WK[i].m+' '+WK[i].w+' kaldırıldı');}
+function delMonth(m){const WK=weeksNow();const keep=WK.map(w=>w.m!==m);if(keep.every(k=>k))return;state.weeks=WK.filter((w,i)=>keep[i]);state.timeline.forEach(t=>{t.cells=t.cells.filter((c,i)=>keep[i]);});save();renderTimeline();toast(m+' kaldırıldı');}
+function cycleCell(ti,ci){const cur=state.timeline[ti].cells[ci]||0;state.timeline[ti].cells[ci]=(cur+1)%3;if(Date.now()-_lastTlLog>600000){logChange('Timeline güncellendi');_lastTlLog=Date.now();}save();renderTimeline();}
+function updTL(ti,v){state.timeline[ti].task=v;save();}
+function addTLRow(){state.timeline.push({id:id(),task:'',cells:fill(weeksNow().length,0)});save();renderTimeline();}
+function delTLRow(ti){state.timeline.splice(ti,1);save();renderTimeline();}
+
+/* ---------- toast + boot ---------- */
+let _tt;
+function toast(m){const el=document.getElementById('toast');el.textContent=m;el.classList.add('show');clearTimeout(_tt);_tt=setTimeout(()=>el.classList.remove('show'),1800);}
+function renderAll(){renderTasks();renderTimeline();renderLastUpd();}
+initData();
+</script>
+</body></html>
